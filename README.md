@@ -1,3 +1,7 @@
+<!-- studiomeyer-mcp-stack-banner:start -->
+> **Part of the [StudioMeyer MCP Stack](https://studiomeyer.io)** — Built in Mallorca 🌴 · ⭐ if you use it
+<!-- studiomeyer-mcp-stack-banner:end -->
+
 # mcp-tenant-pair
 
 Foundation library + reference MCP server for multi-user tenancy in consumer MCP servers (couples, families, small groups). Identity-separated state, bi-temporal storage, conflict-resolver interface.
