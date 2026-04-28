@@ -1,0 +1,12 @@
+node_modules/
+packages/*/dist/
+packages/*/tsconfig.tsbuildinfo
+*.log
+.DS_Store
+.env
+.env.local
+coverage/
+.vitest-cache/
+*.sqlite
+*.sqlite3
+*.db

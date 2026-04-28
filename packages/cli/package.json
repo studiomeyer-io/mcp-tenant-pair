@@ -1,0 +1,33 @@
+{
+  "name": "mcp-tenant-pair-cli",
+  "version": "0.1.0",
+  "description": "CLI for inspecting and operating mcp-tenant-pair stores",
+  "license": "MIT",
+  "author": "Matthias Meyer (StudioMeyer)",
+  "type": "module",
+  "main": "./dist/cli.js",
+  "types": "./dist/cli.d.ts",
+  "bin": {
+    "mcp-tenant-pair-cli": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "mcp",
+    "cli",
+    "tenant"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rimraf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "mcp-tenant-pair": "0.1.0"
+  }
+}
