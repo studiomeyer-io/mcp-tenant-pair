@@ -144,3 +144,7 @@ Tests cover (76 total):
 ## Status
 
 Foundation build, Round 1. Reviewed (Cold-Cross-Review + MCP Factory Reviewer + Tester) — all HIGH/MEDIUM findings fixed in this round. tsc clean, 76/76 tests green.
+
+## About StudioMeyer
+
+[StudioMeyer](https://studiomeyer.io) is an AI and design studio from Palma de Mallorca, building custom websites and AI infrastructure for small and medium businesses. Production stack on Claude Agent SDK, MCP, n8n and an in-house observability and guard layer.
