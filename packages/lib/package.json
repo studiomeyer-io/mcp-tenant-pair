@@ -1,6 +1,6 @@
 {
   "name": "mcp-tenant-pair",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Foundation library for multi-user tenancy in MCP servers (pairs, groups, shared state, bi-temporal conflicts)",
   "license": "MIT",
   "author": "Matthias Meyer (StudioMeyer)",

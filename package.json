@@ -1,6 +1,6 @@
 {
   "name": "mcp-tenant-pair-monorepo",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Foundation library + reference MCP server for multi-user tenancy in consumer MCP servers",
   "license": "MIT",

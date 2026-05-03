@@ -1,6 +1,6 @@
 {
   "name": "mcp-tenant-pair-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "CLI for inspecting and operating mcp-tenant-pair stores",
   "license": "MIT",
   "author": "Matthias Meyer (StudioMeyer)",
@@ -28,6 +28,6 @@
   },
   "dependencies": {
     "commander": "^12.1.0",
-    "mcp-tenant-pair": "0.1.0"
+    "mcp-tenant-pair": "0.1.1"
   }
 }
