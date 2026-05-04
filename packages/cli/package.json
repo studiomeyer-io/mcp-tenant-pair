@@ -27,7 +27,7 @@
     "clean": "rimraf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "commander": "^12.1.0",
+    "commander": "^14.0.3",
     "mcp-tenant-pair": "0.1.1"
   }
 }
