@@ -4,7 +4,14 @@
 
 # mcp-tenant-pair
 
-Foundation library + reference MCP server for multi-user tenancy in consumer MCP servers (couples, families, small groups). Identity-separated state, bi-temporal storage, conflict-resolver interface.
+
+<!-- badges -->
+[![npm version](https://img.shields.io/npm/v/mcp-tenant-pair?style=flat-square&color=cb3837&logo=npm&label=npm)](https://www.npmjs.com/package/mcp-tenant-pair)
+[![npm downloads](https://img.shields.io/npm/dm/mcp-tenant-pair?style=flat-square&color=cb3837&logo=npm&label=installs%2Fmo)](https://www.npmjs.com/package/mcp-tenant-pair)
+![License](https://img.shields.io/github/license/studiomeyer-io/mcp-tenant-pair?style=flat-square&color=22c55e&label=license)
+![Last commit](https://img.shields.io/github/last-commit/studiomeyer-io/mcp-tenant-pair?style=flat-square&color=88c0d0&label=updated)
+![GitHub stars](https://img.shields.io/github/stars/studiomeyer-io/mcp-tenant-pair?style=flat-square&color=ffd700&logo=github&label=stars)
+<!-- /badges -->Foundation library + reference MCP server for multi-user tenancy in consumer MCP servers (couples, families, small groups). Identity-separated state, bi-temporal storage, conflict-resolver interface.
 
 **Spec:** MCP 2025-06-18
 **License:** MIT
