@@ -321,7 +321,10 @@ export class PostgresTenantStore implements TenantStore {
         await client.query("ROLLBACK");
         throw new Error("INVITE_ALREADY_ACCEPTED");
       }
-      if (invite.expires_at < input.nowIso) {
+      // Expiry is inclusive of the boundary instant (expires_at <= now =>
+      // expired) so this stays the exact complement of countPendingInvites
+      // (pending <=> expires_at > asOf). Matches the SQLite adapter.
+      if (invite.expires_at <= input.nowIso) {
         await client.query("ROLLBACK");
         throw new Error("INVITE_EXPIRED");
       }
@@ -385,7 +388,8 @@ export class PostgresTenantStore implements TenantStore {
     const invite = await this.getInvite(input.inviteToken);
     if (!invite) throw new Error("INVITE_NOT_FOUND");
     if (invite.acceptedAt) throw new Error("INVITE_ALREADY_ACCEPTED");
-    if (invite.expiresAt < input.nowIso) throw new Error("INVITE_EXPIRED");
+    // Inclusive boundary -- see acceptInviteAtomic / SQLite adapter.
+    if (invite.expiresAt <= input.nowIso) throw new Error("INVITE_EXPIRED");
     const existing = await this.getMember(invite.pairId, input.memberId);
     if (existing && !existing.leftAt) throw new Error("ALREADY_MEMBER");
     let reactivated = false;

@@ -342,7 +342,11 @@ export class SqliteTenantStore implements TenantStore {
         .get(input.inviteToken) as InviteRow | undefined;
       if (!inviteRow) throw new Error("INVITE_NOT_FOUND");
       if (inviteRow.accepted_at) throw new Error("INVITE_ALREADY_ACCEPTED");
-      if (inviteRow.expires_at < input.nowIso) throw new Error("INVITE_EXPIRED");
+      // Expiry is inclusive of the boundary instant: an invite whose
+      // expires_at equals `now` is expired. This makes "acceptable" the exact
+      // complement of countPendingInvites' "pending" predicate (expires_at >
+      // asOf) -- at t == expires_at the invite is neither pending nor acceptable.
+      if (inviteRow.expires_at <= input.nowIso) throw new Error("INVITE_EXPIRED");
       const existingRow = this.db
         .prepare("SELECT * FROM members WHERE pair_id = ? AND member_id = ?")
         .get(inviteRow.pair_id, input.memberId) as MemberRow | undefined;
