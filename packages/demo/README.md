@@ -1,6 +1,6 @@
 # mcp-tenant-pair-demo
 
-Reference Low-Level MCP server (stdio transport) exposing the 11 tenant-pair tools defined by `mcp-tenant-pair`. Use as a runnable example, an MCP-Inspector target, or a smoke-test fixture.
+Reference Low-Level MCP server (stdio transport) exposing the 12 tenant-pair tools defined by `mcp-tenant-pair`. Use as a runnable example, an MCP-Inspector target, or a smoke-test fixture.
 
 ## Install + run
 
@@ -27,7 +27,7 @@ Or in an MCP client config (Claude Desktop, etc.):
 
 ## Tools
 
-All 11 tools from the library are exposed (see [root README](../../README.md) for the matrix). Annotations:
+All 12 tools from the library are exposed (see [root README](../../README.md) for the matrix) — the 12th is `forget_member` (DSGVO Art. 17 erasure). Annotations:
 
 - `readOnlyHint: true` — `list_members`, `get_member_constraints`, `get_shared_state`
 - `destructiveHint: true` — `kick_member`, `leave_pair`, `resolve_conflicts`

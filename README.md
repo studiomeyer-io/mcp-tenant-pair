@@ -148,19 +148,30 @@ npm run build
 npm test
 ```
 
-Tests cover (76 total):
+Tests cover (142 + 1 conditional):
 - Pair creation (8)
 - Invite flow (10)
+- Invite expiry boundary (6) — accept/pending agree at the exact `expires_at` instant, both adapters
 - Member preferences (8)
 - Shared state (8)
 - Conflict resolution (13)
+- Resolvers (11)
+- Error handling (17) — exhaustive `TenantPairError` code coverage
 - Store adapters (6)
+- Postgres adapter (26) — schema-identifier validation, atomic transaction, fallback paths (mock pool, no live DB)
+- Adapter parity (6 + 1) — same operations against SQLite and Postgres produce identical results; the Postgres leg runs only when `TENANT_PAIR_TEST_PG_URL`/`DATABASE_URL` points at a reachable database and is skipped otherwise (never false-fails)
 - Demo server integration (9)
 - Round-1 regression fixes (14) — SQL-injection schema-validation, TOCTOU acceptInvite race, conflict-resolved winner-marker, asOf-clock, DSGVO erasure, CSPRNG-default
 
+Run the cross-adapter parity suite against a real Postgres:
+
+```sh
+TENANT_PAIR_TEST_PG_URL=postgres://user:pass@host:5432/db npm test
+```
+
 ## Status
 
-Foundation build, Round 1. Reviewed (Cold-Cross-Review + MCP Factory Reviewer + Tester) — all HIGH/MEDIUM findings fixed in this round. tsc clean, 76/76 tests green.
+Foundation build. Reviewed (Cold-Cross-Review + MCP Factory Reviewer + Tester) — all HIGH/MEDIUM findings fixed. tsc clean (strict), 142 tests green (+1 Postgres-conditional skip). Prod dependency tree carries 0 known advisories (`npm audit --omit=dev`).
 
 ## About StudioMeyer
 
