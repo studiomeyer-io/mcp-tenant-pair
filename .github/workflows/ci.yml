@@ -144,7 +144,20 @@ jobs:
               try { const d = JSON.parse(z); if (d.id === 3) treffer = d; } catch {}
             }
             if (!treffer) throw new Error('keine Antwort auf tools/call erhalten');
-            if (treffer.error) throw new Error('Server meldete: ' + JSON.stringify(treffer.error).slice(0,300));
-            if (!JSON.stringify(treffer.result ?? {}).includes('pairId')) throw new Error('tools/call antwortete ohne pairId');
-            console.log('ok, create_pair ueber MCP ausgefuehrt');
+            // Zwei Fehlerkanaele, nicht einer: JSON-RPC meldet Protokollfehler in
+            // .error, der Server meldet Handlerfehler dagegen als result.isError
+            // mit einer Textmeldung. Ohne die zweite Pruefung waere eine
+            // Fehlerantwort wie 'Invalid arguments: pairId Required' gruen
+            // geworden, weil das Wort pairId darin vorkommt.
+            if (treffer.error) throw new Error('JSON-RPC-Fehler: ' + JSON.stringify(treffer.error).slice(0,300));
+            const ergebnis = treffer.result ?? {};
+            if (ergebnis.isError) throw new Error('Werkzeug meldete einen Fehler: ' + JSON.stringify(ergebnis.content ?? {}).slice(0,300));
+            const text = ergebnis?.content?.[0]?.text;
+            if (typeof text !== 'string') throw new Error('Antwort ohne Textinhalt: ' + JSON.stringify(ergebnis).slice(0,300));
+            let nutzlast;
+            try { nutzlast = JSON.parse(text); } catch { throw new Error('Textinhalt ist kein JSON: ' + text.slice(0,200)); }
+            if (typeof nutzlast.pairId !== 'string' || nutzlast.pairId.length === 0) {
+              throw new Error('keine nichtleere pairId in der Nutzlast: ' + text.slice(0,200));
+            }
+            console.log('ok, create_pair ueber MCP ausgefuehrt, pairId erhalten');
           "
