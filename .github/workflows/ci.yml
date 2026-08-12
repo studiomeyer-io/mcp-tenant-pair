@@ -53,13 +53,19 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - name: Pack the published library
-        # mkdir ist noetig: --pack-destination legt das Verzeichnis nicht selbst an
-        # und npm bricht sonst mit ENOENT ab (erster Lauf dieses Jobs, S1975).
+      - name: Pack all three published packages
+        # S1975, Codex-Runde 3: vorher wurde nur packages/lib gepackt. Publiziert
+        # werden aber DREI Pakete, und cli und demo versprechen dasselbe >=20,
+        # ohne dass es je auf 20.0.0 lief. Eine Aenderung in cli oder demo, die
+        # 20.19 braucht, waere in beiden Jobs gruen geblieben.
+        # mkdir ist noetig: --pack-destination legt das Verzeichnis nicht selbst
+        # an, npm bricht sonst mit ENOENT ab.
         run: |
           set -euo pipefail
           mkdir -p /tmp/pkg
-          npm pack --workspace packages/lib --pack-destination /tmp/pkg
+          for w in lib cli demo; do
+            npm pack --workspace "packages/$w" --pack-destination /tmp/pkg
+          done
           ls -la /tmp/pkg
 
       - name: Switch to the lowest Node we promise in engines
@@ -67,16 +73,37 @@ jobs:
         with:
           node-version: 20.0.0
 
-      - name: Install and import it the way a consumer would
+      - name: Install and use all three the way a consumer would
+        # Jedes Paket wird ueber seinen ECHTEN Einstiegspunkt geprueft, nicht nur
+        # installiert: lib ueber die Exporte, cli ueber --help, demo als
+        # stdio-Server mit geschlossenem stdin. Die Binaries werden direkt
+        # aufgerufen und nicht ueber npx: npx lieferte im lokalen Vorlauf still
+        # eine leere Ausgabe mit exit 0, ein Test darauf waere immer gruen
+        # gewesen. Gegenprobe gefahren: ein kaputter Import faellt mit exit 1 auf.
         run: |
           set -euo pipefail
           node --version
           mkdir -p /tmp/consumer && cd /tmp/consumer
           npm init -y > /dev/null
           npm install /tmp/pkg/*.tgz
+
+          echo "--- 1/3 library: Exporte ---"
           node --input-type=module -e "
             const m = await import('mcp-tenant-pair');
             const names = Object.keys(m);
-            if (names.length === 0) throw new Error('leerer Export, das Paket ist auf dieser Node-Version unbrauchbar');
-            console.log('ok auf', process.version, '| Exporte:', names.join(', '));
+            if (names.length === 0) throw new Error('leerer Export, unbrauchbar auf dieser Node-Version');
+            console.log('ok auf', process.version, '|', names.length, 'Exporte');
           "
+
+          echo "--- 2/3 cli: --help ---"
+          hilfe=$(node node_modules/mcp-tenant-pair-cli/dist/cli.js --help)
+          case "$hilfe" in
+            *Usage:*) echo "ok, Hilfe ausgegeben" ;;
+            *) echo "FEHLER: --help lief durch, gab aber keine Hilfe aus"; echo "$hilfe"; exit 1 ;;
+          esac
+
+          echo "--- 3/3 demo: stdio-Server laedt ---"
+          # Der Server beendet sich bei geschlossenem stdin. Ein Modul-Ladefehler
+          # faellt hier mit exit 1 auf, ein Haenger nach 30 s mit 124.
+          timeout 30 node node_modules/mcp-tenant-pair-demo/dist/server.js < /dev/null
+          echo "ok, Server geladen und sauber beendet"
