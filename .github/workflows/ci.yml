@@ -30,3 +30,47 @@ jobs:
       - run: npm test
       - run: npm audit --audit-level=high --omit=dev
         continue-on-error: false
+
+  # S1975 (Codex-Runde 2): Der Job oben testet die ENTWICKLUNGS-Umgebung, die seit
+  # vite 8 bei 20.19 anfaengt. Die veroeffentlichten Pakete versprechen aber
+  # `engines: >=20`, und diese Zusage wurde nirgends gemessen: eine Aenderung, die
+  # erst ab 20.19 laeuft, waere oben komplett gruen geworden und haette trotzdem
+  # unter >=20 auf npm gestanden.
+  #
+  # Dieser Job prueft deshalb genau das, was ein Konsument tut, und nichts weiter:
+  # Paket bauen, packen, in einem LEEREN Verzeichnis auf der versprochenen
+  # Untergrenze installieren und importieren. Ohne vite, ohne vitest, ohne die
+  # devDeps der Wurzel, die diese Node-Version gar nicht mehr unterstuetzen.
+  consumer-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build with a supported toolchain
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Pack the published library
+        run: npm pack --workspace packages/lib --pack-destination /tmp/pkg
+
+      - name: Switch to the lowest Node we promise in engines
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20.0.0
+
+      - name: Install and import it the way a consumer would
+        run: |
+          set -euo pipefail
+          node --version
+          mkdir -p /tmp/consumer && cd /tmp/consumer
+          npm init -y > /dev/null
+          npm install /tmp/pkg/*.tgz
+          node --input-type=module -e "
+            const m = await import('mcp-tenant-pair');
+            const names = Object.keys(m);
+            if (names.length === 0) throw new Error('leerer Export, das Paket ist auf dieser Node-Version unbrauchbar');
+            console.log('ok auf', process.version, '| Exporte:', names.join(', '));
+          "
