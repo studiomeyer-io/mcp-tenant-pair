@@ -54,7 +54,13 @@ jobs:
       - run: npm ci
       - run: npm run build
       - name: Pack the published library
-        run: npm pack --workspace packages/lib --pack-destination /tmp/pkg
+        # mkdir ist noetig: --pack-destination legt das Verzeichnis nicht selbst an
+        # und npm bricht sonst mit ENOENT ab (erster Lauf dieses Jobs, S1975).
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pkg
+          npm pack --workspace packages/lib --pack-destination /tmp/pkg
+          ls -la /tmp/pkg
 
       - name: Switch to the lowest Node we promise in engines
         uses: actions/setup-node@v7
