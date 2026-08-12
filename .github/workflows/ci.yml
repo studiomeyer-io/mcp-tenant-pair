@@ -87,23 +87,64 @@ jobs:
           npm init -y > /dev/null
           npm install /tmp/pkg/*.tgz
 
-          echo "--- 1/3 library: Exporte ---"
+          echo "--- 1/4 library: jeden exports-Specifier laden ---"
+          # Nicht nur den Root: die Subpath-Specifier sind Teil des oeffentlichen
+          # Vertrags und werden von einem Konsumenten einzeln importiert.
           node --input-type=module -e "
-            const m = await import('mcp-tenant-pair');
-            const names = Object.keys(m);
-            if (names.length === 0) throw new Error('leerer Export, unbrauchbar auf dieser Node-Version');
-            console.log('ok auf', process.version, '|', names.length, 'Exporte');
+            const specs = [
+              'mcp-tenant-pair',
+              'mcp-tenant-pair/store/sqlite',
+              'mcp-tenant-pair/store/postgres',
+              'mcp-tenant-pair/resolvers/lww',
+              'mcp-tenant-pair/resolvers/manual',
+            ];
+            for (const s of specs) {
+              const m = await import(s);
+              if (Object.keys(m).length === 0) throw new Error('leerer Export: ' + s);
+            }
+            console.log('ok auf', process.version, '|', specs.length, 'Specifier geladen');
           "
 
-          echo "--- 2/3 cli: --help ---"
-          hilfe=$(node node_modules/mcp-tenant-pair-cli/dist/cli.js --help)
-          case "$hilfe" in
-            *Usage:*) echo "ok, Hilfe ausgegeben" ;;
-            *) echo "FEHLER: --help lief durch, gab aber keine Hilfe aus"; echo "$hilfe"; exit 1 ;;
+          echo "--- 2/4 library: eine ECHTE Operation ausfuehren ---"
+          # Laden allein beweist wenig: TenantPair.init() laeuft erst bei einer
+          # echten Operation, und genau dort koennte eine neuere Node-API stecken.
+          node --input-type=module -e "
+            const { TenantPair } = await import('mcp-tenant-pair');
+            const { SqliteTenantStore } = await import('mcp-tenant-pair/store/sqlite');
+            const tp = new TenantPair({ store: new SqliteTenantStore({ path: ':memory:' }) });
+            await tp.init();
+            const r = await tp.createPair({ creatorMemberId: 'alice' });
+            if (!r.pairId || !r.inviteToken) throw new Error('createPair lieferte kein Ergebnis');
+            const members = await tp.listMembers(r.pairId);
+            if (members.length !== 1) throw new Error('listMembers unerwartet: ' + members.length);
+            await tp.close();
+            console.log('ok, createPair und listMembers durchgelaufen');
+          "
+
+          echo "--- 3/4 cli: einen ECHTEN Befehl, nicht nur --help ---"
+          ausgabe=$(node node_modules/mcp-tenant-pair-cli/dist/cli.js --db /tmp/smoke.sqlite pair create --member alice)
+          case "$ausgabe" in
+            *pairId*) echo "ok, pair create lieferte eine pairId" ;;
+            *) echo "FEHLER: pair create lief durch, lieferte aber keine pairId"; echo "$ausgabe"; exit 1 ;;
           esac
 
-          echo "--- 3/3 demo: stdio-Server laedt ---"
-          # Der Server beendet sich bei geschlossenem stdin. Ein Modul-Ladefehler
-          # faellt hier mit exit 1 auf, ein Haenger nach 30 s mit 124.
-          timeout 30 node node_modules/mcp-tenant-pair-demo/dist/server.js < /dev/null
-          echo "ok, Server geladen und sauber beendet"
+          echo "--- 4/4 demo: vollstaendiger MCP-Roundtrip mit tools/call ---"
+          # initialize, dann ein echter Werkzeug-Aufruf. Ein blosser Serverstart
+          # konstruiert nur Store und Server, ohne je init() zu erreichen.
+          printf '%s\n%s\n%s\n' \
+            '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"consumer-contract","version":"1"}}}' \
+            '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
+            '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"create_pair","arguments":{"creatorMemberId":"alice"}}}' \
+            | timeout 60 node node_modules/mcp-tenant-pair-demo/dist/server.js > /tmp/mcp-out.txt
+          node -e "
+            const zeilen = require('fs').readFileSync('/tmp/mcp-out.txt','utf8').split('\n');
+            let treffer = null;
+            for (const z of zeilen) {
+              if (!z.trim()) continue;
+              try { const d = JSON.parse(z); if (d.id === 3) treffer = d; } catch {}
+            }
+            if (!treffer) throw new Error('keine Antwort auf tools/call erhalten');
+            if (treffer.error) throw new Error('Server meldete: ' + JSON.stringify(treffer.error).slice(0,300));
+            if (!JSON.stringify(treffer.result ?? {}).includes('pairId')) throw new Error('tools/call antwortete ohne pairId');
+            console.log('ok, create_pair ueber MCP ausgefuehrt');
+          "
