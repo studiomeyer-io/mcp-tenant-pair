@@ -10,8 +10,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [20.x, 22.x]
+        # S1975: vorher [20.x, 22.x], das testet nur die JEWEILS NEUESTEN Patches
+        # und damit nie die Untergrenze, die wir behaupten. Seit dem vitest-Sprung
+        # auf 4.x zieht vite 8 die Entwicklungs-Anforderung auf ^20.19.0 || >=22.12.0
+        # (siehe engines in der Wurzel-package.json). Genau diese beiden Grenzen
+        # stehen jetzt in der Matrix, damit die Behauptung gemessen wird statt
+        # geglaubt. 24.x faengt die naechste Runtime frueh.
+        node-version: [20.19.0, 22.12.0, 24.x]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7

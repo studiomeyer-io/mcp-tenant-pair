@@ -100,7 +100,7 @@ Reads `MCP_TENANT_PAIR_DB` env (default `:memory:`).
 | Concern              | Supported                                   |
 |----------------------|---------------------------------------------|
 | MCP Spec             | 2025-06-18                                  |
-| Node                 | >= 20.0.0                                   |
+| Node                 | >= 20.0.0 to use it. Building this repo needs 20.19+ or 22.12+ (Vite 8). |
 | Storage              | SQLite (default), Postgres (peer-dep)       |
 | Conflict Resolver    | LWWResolver (default), ManualResolver, custom (interface) |
 | Transport            | stdio (demo), library is transport-free     |
