@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.studiomeyer/tenant-pair",
+  "title": "MCP Tenant Pair",
+  "description": "Multi-user tenancy library for MCP servers. Pairs, groups, bi-temporal shared state, DSGVO erasure.",
+  "repository": {
+    "url": "https://github.com/studiomeyer-io/mcp-tenant-pair",
+    "source": "github"
+  },
+  "version": "0.1.2",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "mcp-tenant-pair-demo",
+      "version": "0.1.2",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
