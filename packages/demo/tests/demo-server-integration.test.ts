@@ -75,7 +75,16 @@ describe("demo MCP server integration", () => {
     for (const tool of result.tools) {
       expect(tool.inputSchema.type).toBe("object");
       expect(tool.inputSchema.properties).toBeTypeOf("object");
+      expect(Object.keys(tool.inputSchema.properties).length).toBeGreaterThan(0);
     }
+    const create = result.tools.find((tool) => tool.name === "create_pair")!;
+    expect(create.inputSchema.properties.creatorMemberId).toMatchObject({
+      type: "string", minLength: 1, maxLength: 64,
+    });
+    const invite = result.tools.find((tool) => tool.name === "invite_member")!;
+    expect(invite.inputSchema.properties.ttlSeconds).toMatchObject({
+      type: "integer", maximum: 2592000,
+    });
   });
 
   it("readOnlyHint and destructiveHint are honest per tool", async () => {

@@ -1,6 +1,6 @@
 {
   "name": "mcp-tenant-pair-demo",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Reference MCP server demonstrating mcp-tenant-pair (12 tools, stdio): pair lifecycle + bi-temporal shared state + DSGVO Art.17 erasure",
   "license": "MIT",
   "author": "Matthias Meyer (StudioMeyer)",
@@ -32,8 +32,8 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
-    "mcp-tenant-pair": "0.1.2",
-    "zod": "^3.23.8"
+    "mcp-tenant-pair": "0.1.3",
+    "zod": "^4.6.7"
   },
   "mcpName": "io.studiomeyer/tenant-pair"
 }
