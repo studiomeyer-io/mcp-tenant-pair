@@ -21,7 +21,7 @@ jobs:
         node-version: [20.19.0, 22.12.0, 24.x]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
@@ -65,7 +65,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Build with a supported toolchain
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 22.12.0
           cache: npm
@@ -85,9 +85,31 @@ jobs:
             npm pack --workspace "packages/$w" --pack-destination /tmp/pkg
           done
           ls -la /tmp/pkg
+          node --input-type=module <<'NODE'
+          import { strict as assert } from 'node:assert';
+          import { readFileSync } from 'node:fs';
+          import { createHash } from 'node:crypto';
+          import { execFileSync } from 'node:child_process';
+          const expectedSha256 = '5e1661dfb5dc5bbf7469b657895adaec2866e182738c67ae083663e0f441f591';
+          const normalize = text => text.replace(/\s+/gu, ' ').trim();
+          const digest = text => createHash('sha256').update(normalize(text)).digest('hex');
+          const rootLicense = readFileSync('LICENSE', 'utf8');
+          const legalBody = text => normalize(text).split('Permission is hereby granted, free of charge,')[1]?.trim();
+          assert.ok(legalBody(rootLicense), 'root MIT license body must not be empty');
+          assert.equal(digest(rootLicense), expectedSha256, 'complete approved root MIT license');
+          for (const workspace of ['lib', 'cli', 'demo']) {
+            const pkg = JSON.parse(readFileSync(`packages/${workspace}/package.json`, 'utf8'));
+            const tarball = `/tmp/pkg/${pkg.name}-${pkg.version}.tgz`;
+            const packedLicense = execFileSync('tar', ['-xOf', tarball, 'package/LICENSE'], { encoding: 'utf8' });
+            assert.ok(legalBody(packedLicense), `${pkg.name}: packed MIT license body must not be empty`);
+            assert.equal(digest(packedLicense), expectedSha256, `${pkg.name}: complete packed MIT license`);
+            assert.equal(normalize(packedLicense), normalize(rootLicense), `${pkg.name}: root MIT license content`);
+            console.log(`${pkg.name}: complete packed MIT license verified`);
+          }
+          NODE
 
       - name: Switch to the lowest Node we promise in engines
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 20.0.0
 

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+### Dependency maintenance
+
+- Include the complete root MIT license in the library, CLI and demo npm archives.
+
+- Prepare patch release 0.1.3 consistently across the library, CLI, demo and registry descriptor.
+- Migrate library/demo Zod dependencies to ^4.6.7 and the official input-schema converter, preserving closed roots and optional unknown values. Use a scoped rimraf -> glob ^14.0.3 development override; verify matching-fixture removal through the real upstream operation.
+- The checked workspace build/typecheck passes, with 142 passing tests and one existing skip. A real SQLite-backed stdio handshake exposes 12 tools. All-dependency and production audits report zero findings.
+
 ### Added
 - Initial monorepo skeleton with three packages
 - `mcp-tenant-pair` core library with `TenantPair` class, `TenantStore` interface, SQLite + Postgres adapters
@@ -19,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Invite expiry is now inclusive of the boundary instant in both adapters: at the exact `expires_at` time an invite is rejected as `INVITE_EXPIRED` (was previously still acceptable). This makes the accept path the exact complement of `countPendingInvites` (pending iff `expires_at > asOf`), and aligns SQLite and Postgres behaviour. Fixed in `acceptInviteAtomic` (both adapters) and the Postgres non-atomic fallback.
 
 ### Security
-- Refreshed `package-lock.json` to pull patched transitive prod dependencies via `@modelcontextprotocol/sdk` (within existing semver ranges, no SDK change): `hono` 4.12.18 to 4.12.26 (closes 8 advisories incl. GHSA-wwfh-h76j-fc44, high) and `qs` 6.15.1 to 6.15.2 (GHSA-q8mj-m7cp-5q26). The production dependency tree now reports 0 known advisories under `npm audit --omit=dev`, restoring the CI audit gate. Remaining advisories are dev-only (vitest/vite chain) and require a major bump (deferred).
+- Refreshed `package-lock.json` to pull patched transitive prod dependencies via `@modelcontextprotocol/sdk` (within existing semver ranges, no SDK change): `hono` 4.12.18 to 4.12.26 (closes 8 advisories incl. GHSA-wwfh-h76j-fc44, high) and `qs` 6.15.1 to 6.15.2 (GHSA-q8mj-m7cp-5q26). The production dependency tree now reports 0 known advisories under `npm audit --omit=dev`, restoring the CI audit gate. That earlier update left dev-only vitest/vite advisories; the dependency maintenance above resolves the current development tree.
 
 ### Tests
 - Added invite-expiry boundary tests (SQLite + Postgres parity, including the atomic and non-atomic accept paths).

@@ -25,59 +25,7 @@ function readPackageJson(): PackageJsonShape {
 }
 
 function zodToJsonSchema(shape: z.ZodRawShape): Record<string, unknown> {
-  const properties: Record<string, unknown> = {};
-  const required: string[] = [];
-  for (const [name, schema] of Object.entries(shape)) {
-    properties[name] = describeZod(schema);
-    if (!schema.isOptional()) required.push(name);
-  }
-  const out: Record<string, unknown> = {
-    type: "object",
-    properties,
-    additionalProperties: false,
-  };
-  if (required.length > 0) out.required = required;
-  return out;
-}
-
-function describeZod(schema: z.ZodTypeAny): Record<string, unknown> {
-  const def = schema._def as { typeName?: string };
-  switch (def.typeName) {
-    case "ZodString": {
-      const s = schema as z.ZodString;
-      const out: Record<string, unknown> = { type: "string" };
-      const checks = (s._def as { checks?: Array<{ kind: string; value?: number }> })
-        .checks ?? [];
-      for (const c of checks) {
-        if (c.kind === "min" && typeof c.value === "number") out.minLength = c.value;
-        if (c.kind === "max" && typeof c.value === "number") out.maxLength = c.value;
-      }
-      return out;
-    }
-    case "ZodNumber":
-      return { type: "number" };
-    case "ZodBoolean":
-      return { type: "boolean" };
-    case "ZodArray": {
-      const inner = (schema as z.ZodArray<z.ZodTypeAny>)._def.type;
-      return { type: "array", items: describeZod(inner) };
-    }
-    case "ZodEnum": {
-      const values = (schema as z.ZodEnum<[string, ...string[]]>)._def.values;
-      return { type: "string", enum: values };
-    }
-    case "ZodOptional":
-      return describeZod((schema as z.ZodOptional<z.ZodTypeAny>)._def.innerType);
-    case "ZodUnknown":
-    case "ZodAny":
-      return {};
-    case "ZodObject": {
-      const o = schema as z.ZodObject<z.ZodRawShape>;
-      return zodToJsonSchema(o.shape);
-    }
-    default:
-      return {};
-  }
+  return z.toJSONSchema(z.strictObject(shape), { target: "draft-07", io: "input" });
 }
 
 export interface CreateServerOptions {

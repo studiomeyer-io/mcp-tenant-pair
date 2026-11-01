@@ -38,7 +38,7 @@ export const SetMemberPreferencesInputShape = {
   pairId: PairIdShape,
   memberId: MemberIdShape,
   key: KeyShape,
-  value: z.unknown(),
+  value: z.unknown().optional(),
 };
 
 export const GetMemberConstraintsInputShape = {
@@ -57,7 +57,7 @@ export const SetSharedStateInputShape = {
   memberId: MemberIdShape,
   namespace: NamespaceShape,
   key: KeyShape,
-  value: z.unknown(),
+  value: z.unknown().optional(),
 };
 
 export const ResolveConflictsInputShape = {
