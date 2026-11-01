@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Dependency maintenance
 
+- Include the complete root MIT license in the library, CLI and demo npm archives.
+
 - Prepare patch release 0.1.3 consistently across the library, CLI, demo and registry descriptor.
 - Migrate library/demo Zod dependencies to ^4.6.7 and the official input-schema converter, preserving closed roots and optional unknown values. Use a scoped rimraf -> glob ^14.0.3 development override; verify matching-fixture removal through the real upstream operation.
 - The checked workspace build/typecheck passes, with 142 passing tests and one existing skip. A real SQLite-backed stdio handshake exposes 12 tools. All-dependency and production audits report zero findings.
